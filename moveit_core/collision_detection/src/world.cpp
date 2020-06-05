@@ -35,13 +35,13 @@
 /* Author: Acorn Pooley, Ioan Sucan */
 
 #include <moveit/collision_detection/world.h>
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/logging.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 
 namespace collision_detection
 {
 // Logger
-static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_collision_detection.world");
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit.core.collision_detection.world");
 
 World::World()
 {

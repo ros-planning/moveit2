@@ -37,12 +37,12 @@
 #include <moveit/collision_detection/collision_matrix.h>
 #include <boost/bind.hpp>
 #include <iomanip>
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/logging.hpp>
 
 namespace collision_detection
 {
 // Logger
-static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_collision_detection.collision_matrix");
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit.core.collision_detection.collision_matrix");
 
 AllowedCollisionMatrix::AllowedCollisionMatrix()
 {

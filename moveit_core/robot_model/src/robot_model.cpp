@@ -45,13 +45,13 @@
 #include <cmath>
 #include <memory>
 #include "order_robot_model_items.inc"
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/logging.hpp>
 
 namespace moveit
 {
 namespace core
 {
-static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_robot_model.robot_model");
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit.core.robot_model");
 
 RobotModel::RobotModel(const urdf::ModelInterfaceSharedPtr& urdf_model, const srdf::ModelConstSharedPtr& srdf_model)
 {

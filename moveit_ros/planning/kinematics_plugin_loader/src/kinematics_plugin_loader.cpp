@@ -42,12 +42,12 @@
 #include <vector>
 #include <map>
 #include <memory>
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/rclcpp.hpp>
 #include <moveit/profiler/profiler.h>
 
 namespace kinematics_plugin_loader
 {
-rclcpp::Logger LOGGER = rclcpp::get_logger("kinematics_plugin_loader");
+rclcpp::Logger LOGGER = rclcpp::get_logger("moveit.ros.planning.kinematics_plugin_loader");
 
 class KinematicsPluginLoader::KinematicsLoaderImpl
 {

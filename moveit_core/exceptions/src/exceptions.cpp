@@ -35,12 +35,12 @@
 /* Author: Acorn Pooley, Ioan Sucan */
 
 #include <moveit/exceptions/exceptions.h>
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/logging.hpp>
 
 // Logger
 namespace moveit
 {
-static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_exceptions.exceptions");
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit.core.exceptions");
 
 ConstructException::ConstructException(const std::string& what_arg) : std::runtime_error(what_arg)
 {

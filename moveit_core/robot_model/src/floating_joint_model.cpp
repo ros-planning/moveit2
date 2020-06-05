@@ -39,13 +39,13 @@
 #include <boost/math/constants/constants.hpp>
 #include <limits>
 #include <cmath>
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/logging.hpp>
 
 namespace moveit
 {
 namespace core
 {
-static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_robot_model.floating_joint_model");
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit.core.robot_model.floating_joint_model");
 
 FloatingJointModel::FloatingJointModel(const std::string& name) : JointModel(name), angular_distance_weight_(1.0)
 {

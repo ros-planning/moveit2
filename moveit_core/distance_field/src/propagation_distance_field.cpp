@@ -39,12 +39,12 @@
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/zlib.hpp>
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/logging.hpp>
 
 namespace distance_field
 {
 // Logger
-static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_distance_field.propagation_distance_field");
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit.core.distance_field.propagation_distance_field");
 
 PropagationDistanceField::PropagationDistanceField(double size_x, double size_y, double size_z, double resolution,
                                                    double origin_x, double origin_y, double origin_z,

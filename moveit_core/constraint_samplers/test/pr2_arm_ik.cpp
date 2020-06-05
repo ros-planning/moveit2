@@ -36,6 +36,7 @@
 
 #include <angles/angles.h>
 #include "pr2_arm_ik.h"
+#include <rclcpp/logging.hpp>
 
 /**** List of angles (for reference) *******
       th1 = shoulder/turret pan
@@ -49,7 +50,7 @@
 using namespace angles;
 namespace pr2_arm_kinematics
 {
-static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_constaint_samplers.test.pr2_arm_ik");
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit.core.constraint_samplers.pr2_arm_ik");
 
 PR2ArmIK::PR2ArmIK()
 {

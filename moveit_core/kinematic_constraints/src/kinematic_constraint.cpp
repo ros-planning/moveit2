@@ -44,16 +44,15 @@
 #include <boost/bind.hpp>
 #include <limits>
 #include <memory>
-#include <typeinfo>
 
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp/clock.hpp"
-#include "rclcpp/duration.hpp"
+#include <rclcpp/logging.hpp>
+#include <rclcpp/clock.hpp>
+#include <rclcpp/duration.hpp>
 
 namespace kinematic_constraints
 {
 // Logger
-static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_kinematic_constraints.kinematic_constraints");
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit.core.kinematic_constraints");
 
 static double normalizeAngle(double angle)
 {

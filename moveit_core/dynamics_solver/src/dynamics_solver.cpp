@@ -44,11 +44,11 @@
 #include <kdl/chainfksolverpos_recursive.hpp>
 #include <kdl/chainjnttojacsolver.hpp>
 #include <kdl/tree.hpp>
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/logging.hpp>
 
 namespace dynamics_solver
 {
-static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_dynamics_solver.dynamics_solver");
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit.core.dynamics_solver");
 
 namespace
 {

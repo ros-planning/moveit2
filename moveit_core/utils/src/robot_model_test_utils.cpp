@@ -34,7 +34,7 @@
 
 /* Author: Bryce Willey */
 
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/logging.hpp>
 #include <boost/algorithm/string_regex.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <geometry_msgs/msg/pose.hpp>
@@ -46,7 +46,7 @@ namespace moveit
 {
 namespace core
 {
-static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_utils.robot_model_test_utils");
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit.core.utils.robot_model_test_utils");
 
 moveit::core::RobotModelPtr loadTestingRobotModel(const std::string& robot_name)
 {

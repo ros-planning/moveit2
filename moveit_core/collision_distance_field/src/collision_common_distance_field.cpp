@@ -34,7 +34,6 @@
 
 /* Author: E. Gil Jones */
 
-#include "rclcpp/rclcpp.hpp"
 #include <moveit/collision_distance_field/collision_common_distance_field.h>
 #include <boost/thread/mutex.hpp>
 #include <tf2_eigen/tf2_eigen.h>
@@ -42,8 +41,7 @@
 
 namespace collision_detection
 {
-static const rclcpp::Logger LOGGER =
-    rclcpp::get_logger("moveit_collision_distance_field.collision_common_distance_field");
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit.core.collision_distance_field.common_distance_field");
 struct BodyDecompositionCache
 {
   using Comperator = std::owner_less<shapes::ShapeConstWeakPtr>;

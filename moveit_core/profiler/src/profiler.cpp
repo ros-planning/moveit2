@@ -40,13 +40,13 @@
 #include <vector>
 #include <algorithm>
 #include <sstream>
-#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/logging.hpp>
 
 namespace moveit
 {
 namespace tools
 {
-static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_profiler.profiler");
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit.core.profiler");
 
 Profiler& Profiler::instance()
 {

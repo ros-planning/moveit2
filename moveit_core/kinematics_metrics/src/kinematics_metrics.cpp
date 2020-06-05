@@ -38,11 +38,11 @@
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
 #include <boost/math/constants/constants.hpp>
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/logging.hpp>
 
 namespace kinematics_metrics
 {
-static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_kinematics_metrics.kinematics_metrics");
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit.core.kinematics.metrics");
 
 double KinematicsMetrics::getJointLimitsPenalty(const robot_state::RobotState& state,
                                                 const robot_model::JointModelGroup* joint_model_group) const

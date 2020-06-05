@@ -39,7 +39,7 @@
 #include <geometric_shapes/shape_operations.h>
 #include <tf2_eigen/tf2_eigen.h>
 #include <boost/lexical_cast.hpp>
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/logging.hpp>
 
 namespace moveit
 {
@@ -52,7 +52,7 @@ namespace core
 namespace
 {
 // Logger
-static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_robot_state.conversions");
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit.core.robot_state.conversions");
 
 static bool _jointStateToRobotState(const sensor_msgs::msg::JointState& joint_state, RobotState& state)
 {

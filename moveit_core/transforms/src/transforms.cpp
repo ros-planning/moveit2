@@ -37,14 +37,14 @@
 #include <moveit/transforms/transforms.h>
 #include <tf2_eigen/tf2_eigen.h>
 #include <boost/algorithm/string/trim.hpp>
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/logging.hpp>
 
 namespace moveit
 {
 namespace core
 {
 // Logger
-static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_transforms.transforms");
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit.core.transforms");
 
 Transforms::Transforms(const std::string& target_frame) : target_frame_(target_frame)
 {

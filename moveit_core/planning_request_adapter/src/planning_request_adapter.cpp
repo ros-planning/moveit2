@@ -37,13 +37,13 @@
 #include <moveit/planning_request_adapter/planning_request_adapter.h>
 #include <boost/bind.hpp>
 #include <algorithm>
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/logging.hpp>
 
 // we could really use some c++11 lambda functions here :)
 
 namespace planning_request_adapter
 {
-rclcpp::Logger LOGGER = rclcpp::get_logger("moveit").get_child("planning_request_adapter");
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit.core.planning_request_adapter");
 
 namespace
 {

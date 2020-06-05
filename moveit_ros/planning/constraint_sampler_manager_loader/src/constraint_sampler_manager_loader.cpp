@@ -36,13 +36,13 @@
 
 #include <moveit/constraint_sampler_manager_loader/constraint_sampler_manager_loader.h>
 #include <pluginlib/class_loader.hpp>
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/rclcpp.hpp>
 #include <boost/tokenizer.hpp>
 #include <memory>
 
 namespace constraint_sampler_manager_loader
 {
-static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_ros.constraint_sampler_manager_loader");
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit.ros.planning.constraint_sampler_manager_loader");
 
 class ConstraintSamplerManagerLoader::Helper
 {

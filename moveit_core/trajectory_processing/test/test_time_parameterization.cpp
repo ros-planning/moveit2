@@ -42,10 +42,10 @@
 #include <moveit/trajectory_processing/iterative_spline_parameterization.h>
 #include <moveit/trajectory_processing/iterative_time_parameterization.h>
 #include <moveit/utils/robot_model_test_utils.h>
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/logging.hpp>
 
 // Logger
-static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_trajectory_processing.test.test_time_parameterization");
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit.core.trajectory_processing.test_time_parameterization");
 
 // Static variables used in all tests
 moveit::core::RobotModelConstPtr RMODEL = moveit::core::loadTestingRobotModel("pr2");
@@ -147,8 +147,7 @@ TEST(TestTimeParameterization, TestIterativeParabolic)
 
   auto diff_time = std::chrono::system_clock::now() - wt;
 
-  std::cout << "IterativeParabolicTimeParameterization  took " << (std::chrono::system_clock::now() - wt).count()
-            << std::endl;
+  std::cout << "IterativeParabolicTimeParameterization  took " << diff_time.count() << std::endl;
   printTrajectory(TRAJECTORY);
   ASSERT_LT(TRAJECTORY.getWayPointDurationFromStart(TRAJECTORY.getWayPointCount() - 1), 3.0);
 }

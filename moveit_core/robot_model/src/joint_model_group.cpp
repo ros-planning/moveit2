@@ -42,7 +42,7 @@
 #include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include "order_robot_model_items.inc"
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/logging.hpp>
 
 namespace moveit
 {
@@ -50,7 +50,7 @@ namespace core
 {
 namespace
 {
-static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_robot_model.joint_model_group");
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit.core.robot_model.joint_model_group");
 
 // check if a parent or ancestor of joint is included in this group
 bool includesParent(const JointModel* joint, const JointModelGroup* group)
