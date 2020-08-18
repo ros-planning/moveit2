@@ -1,0 +1,72 @@
+repositories: 
+  OctoMap/octomap: 
+    type: git
+    url: https://github.com/OctoMap/octomap.git
+    version: devel
+  OctoMap/octomap_msgs: 
+    type: git
+    url: https://github.com/OctoMap/octomap_msgs
+    version: ros2
+  ompl/ompl: 
+    type: git
+    url: https://github.com/ompl/ompl
+    version: master
+  ros-controls/control_msgs: 
+    type: git
+    url: https://github.com/ros-controls/control_msgs.git
+    version: foxy-devel
+  ros-planning/geometric_shapes: 
+    type: git
+    url: https://github.com/ros-planning/geometric_shapes
+    version: ros2
+  ros-planning/moveit_msgs: 
+    type: git
+    url: https://github.com/ros-planning/moveit_msgs
+    version: ros2
+  ros-planning/moveit_resources: 
+    type: git
+    url: https://github.com/ros-planning/moveit_resources
+    version: ros2
+  ros-planning/random_numbers: 
+    type: git
+    url: https://github.com/ros-planning/random_numbers
+    version: ros2
+  ros-planning/srdfdom: 
+    type: git
+    url: https://github.com/ros-planning/srdfdom
+    version: ros2
+  ros/angles: 
+    type: git
+    url: https://github.com/ros/angles.git
+    version: ros2
+  ros/eigen_stl_containers: 
+    type: git
+    url: https://github.com/ros/eigen_stl_containers.git
+    version: ros2
+  ros/joint_state_publisher: 
+    type: git
+    url: https://github.com/ros/joint_state_publisher
+    version: ros2
+  ros/urdf_parser_py: 
+    type: git
+    url: https://github.com/ros/urdf_parser_py
+    version: ros2
+  ros/xacro: 
+    type: git
+    url: https://github.com/ros/xacro
+    version: dashing-devel
+  wg-perception/object_recognition_msgs: 
+    type: git
+    url: https://github.com/wg-perception/object_recognition_msgs
+    version: ros2
+
+
+# TODO(#242): Remove below once console_bridge conflict is resolved
+  ros2/urdfdom:
+    type: git
+    url: https://github.com/ros2/urdfdom
+    version: foxy
+  ros/urdfdom_headers:
+    type: git
+    url: https://github.com/ros/urdfdom_headers
+    version: foxy
