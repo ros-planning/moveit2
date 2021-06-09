@@ -2,6 +2,14 @@
 Changelog for package run_moveit_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.4 (2021-05-31)
+------------------
+* Delete MoveIt fake_controller_manager (`#471 <https://github.com/ros-planning/moveit2/issues/471>`_)
+* Contributors: AndyZe
+
+2.1.3 (2021-05-22)
+------------------
+
 2.1.2 (2021-04-20)
 ------------------
 * Unify PickNik name in copyrights (`#419 <https://github.com/ros-planning/moveit2/issues/419>`_)

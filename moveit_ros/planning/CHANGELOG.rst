@@ -2,6 +2,19 @@
 Changelog for package moveit_ros_planning
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.4 (2021-05-31)
+------------------
+* PlanningRequestAdapter helper method getParam()  (`#468 <https://github.com/ros-planning/moveit2/issues/468>`_)
+  * Implement parameters for adapter plugins
+* Contributors: David V. Lu!!
+
+2.1.3 (2021-05-22)
+------------------
+* Delete exclusive arg for collision detector creation (`#466 <https://github.com/ros-planning/moveit2/issues/466>`_)
+  * Delete exclusive arg for collision detector creation
+  * Rename setActiveCollisionDetector->allocateCollisionDetector everywhere
+* Contributors: AndyZe
+
 2.1.2 (2021-04-20)
 ------------------
 * Unify PickNik name in copyrights (`#419 <https://github.com/ros-planning/moveit2/issues/419>`_)

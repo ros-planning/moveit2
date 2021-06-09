@@ -2,6 +2,14 @@
 Changelog for package moveit_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.4 (2021-05-31)
+------------------
+* Fix ament_cmake 'buildtool_depend' in moveit_common (`#480 <https://github.com/ros-planning/moveit2/issues/480>`_)
+* Contributors: Henning Kayser
+
+2.1.3 (2021-05-22)
+------------------
+
 2.1.2 (2021-04-20)
 ------------------
 * Unify PickNik name in copyrights (`#419 <https://github.com/ros-planning/moveit2/issues/419>`_)
