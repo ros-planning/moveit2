@@ -43,6 +43,10 @@
 #include <mutex>
 #include <thread>
 
+// Reflexxes, for smoothing
+#include <reflexxes_wrapper/reflexxes_wrapper.h>
+#include <libreflexxestype2/ReflexxesAPI.h>
+
 // ROS
 #include <rclcpp/rclcpp.hpp>
 #include <control_msgs/msg/joint_jog.hpp>
@@ -62,7 +66,6 @@
 // moveit_servo
 #include <moveit_servo/servo_parameters.h>
 #include <moveit_servo/status_codes.h>
-#include <moveit_servo/low_pass_filter.h>
 
 namespace moveit_servo
 {
@@ -153,7 +156,7 @@ protected:
   void suddenHalt(trajectory_msgs::msg::JointTrajectory& joint_trajectory) const;
 
   /** \brief  Scale the delta theta to match joint velocity/acceleration limits */
-  void enforceVelLimits(Eigen::ArrayXd& delta_theta);
+  bool enforceVelAccelLimitsWithReflexxes(Eigen::ArrayXd& delta_theta);
 
   /** \brief Avoid overshooting joint limits */
   bool enforcePositionLimits(trajectory_msgs::msg::JointTrajectory& joint_trajectory) const;
@@ -169,8 +172,8 @@ protected:
   void composeJointTrajMessage(const sensor_msgs::msg::JointState& joint_state,
                                trajectory_msgs::msg::JointTrajectory& joint_trajectory);
 
-  /** \brief Set the filters to the specified values */
-  void resetLowPassFilters(const sensor_msgs::msg::JointState& joint_state);
+  /** \brief Reset current state of Reflexxes to the specified position. Assume zero velocities/accelerations. */
+  void resetReflexxesState(const sensor_msgs::msg::JointState& joint_state);
 
   /** \brief Handles all aspects of the servoing after the desired joint commands are established
    * Joint and Cartesian calcs feed into here
@@ -263,9 +266,6 @@ protected:
   // Flag for staying inactive while there are no incoming commands
   bool wait_for_servo_commands_ = true;
 
-  // Flag saying if the filters were updated during the timer callback
-  bool updated_filters_ = false;
-
   // Nonzero status flags
   bool have_nonzero_twist_stamped_ = false;
   bool have_nonzero_joint_command_ = false;
@@ -285,8 +285,6 @@ protected:
   // on.
   sensor_msgs::msg::JointState internal_joint_state_, original_joint_state_;
   std::map<std::string, std::size_t> joint_state_name_map_;
-
-  std::vector<LowPassFilter> position_filters_;
 
   trajectory_msgs::msg::JointTrajectory::SharedPtr last_sent_command_;
 
@@ -349,5 +347,10 @@ protected:
   rcl_interfaces::msg::SetParametersResult robotLinkCommandFrameCallback(const rclcpp::Parameter& parameter);
 
   friend class ServoFixture;
+  // Use Reflexxes for command smoothing
+  std::unique_ptr<ReflexxesAPI> reflexxes_;
+  std::unique_ptr<RMLVelocityInputParameters> reflexxes_velocity_input_param_;
+  std::shared_ptr<RMLVelocityOutputParameters> reflexxes_velocity_output_param_;
+  RMLVelocityFlags reflexxes_flags_;
 };
 }  // namespace moveit_servo

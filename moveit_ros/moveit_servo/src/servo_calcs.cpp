@@ -38,9 +38,10 @@
  */
 
 #include <cassert>
-#include <thread>
 #include <chrono>
+#include <math.h>
 #include <mutex>
+#include <thread>
 
 #include <std_msgs/msg/bool.h>
 
@@ -51,6 +52,10 @@ using namespace std::chrono_literals;  // for s, ms, etc.
 
 static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_servo.servo_calcs");
 constexpr auto ROS_LOG_THROTTLE_PERIOD = std::chrono::milliseconds(3000).count();
+constexpr double SAFE_DEFAULT_VELOCITY_LIMIT =
+    M_PI / 2.0;  // rad/s, should be safe for most robots that don't have custom limits defined
+constexpr double SAFE_DEFAULT_ACCELERATION_LIMIT =
+    2 * M_PI;  // rad/s^2, should be safe for most robots that don't have custom limits defined
 
 namespace moveit_servo
 {
@@ -161,9 +166,6 @@ ServoCalcs::ServoCalcs(rclcpp::Node::SharedPtr node,
   {
     // A map for the indices of incoming joint commands
     joint_state_name_map_[internal_joint_state_.name[i]] = i;
-
-    // Low-pass filters for the joint positions
-    position_filters_.emplace_back(parameters_->low_pass_filter_coeff);
   }
 
   // A matrix of all zeros is used to check whether matrices have been initialized
@@ -171,6 +173,46 @@ ServoCalcs::ServoCalcs(rclcpp::Node::SharedPtr node,
   empty_matrix.setZero();
   tf_moveit_to_ee_frame_ = empty_matrix;
   tf_moveit_to_robot_cmd_frame_ = empty_matrix;
+
+  // Reflexxes for command smoothing
+  reflexxes_ = std::make_unique<ReflexxesAPI>(num_joints_, parameters_->publish_period, 0 /* additional threads */);
+  reflexxes_velocity_input_param_ = std::make_unique<RMLVelocityInputParameters>(num_joints_);
+  reflexxes_velocity_output_param_ = std::make_shared<RMLVelocityOutputParameters>(num_joints_);
+  // All joints are active
+  reflexxes_wrapper::setSelectionVectorAllTrue(reflexxes_velocity_input_param_.get(), num_joints_);
+  // Initialize positions/vels/accels to zeros. Current positions will be updated later
+  reflexxes_wrapper::initializePositionInputStateToZeros(reflexxes_velocity_input_param_.get(), num_joints_);
+  // Set velocity and acceleration limits
+  std::vector<double> velocity_limits;
+  std::vector<double> acceleration_limits;
+  for (const auto& joint : joint_model_group_->getActiveJointModels())
+  {
+    // Some joints do not have bounds defined
+    const auto& bound = joint->getVariableBounds(joint->getName());
+
+    if (bound.velocity_bounded_)
+    {
+      // Assume symmetric limits
+      velocity_limits.push_back(bound.max_velocity_);
+    }
+    else
+    {
+      RCLCPP_ERROR_STREAM(LOGGER, "No vel limit defined. Setting to safe default.");
+      velocity_limits.push_back(SAFE_DEFAULT_VELOCITY_LIMIT);
+    }
+
+    if (bound.acceleration_bounded_)
+    {
+      // Assume symmetric limits
+      acceleration_limits.push_back(bound.max_acceleration_);
+    }
+    else
+    {
+      RCLCPP_ERROR_STREAM(LOGGER, "No accel limit defined. Setting to safe default.");
+      acceleration_limits.push_back(SAFE_DEFAULT_ACCELERATION_LIMIT);
+    }
+  }
+  reflexxes_wrapper::setLimits(reflexxes_velocity_input_param_.get(), num_joints_, velocity_limits, acceleration_limits);
 }
 
 ServoCalcs::~ServoCalcs()
@@ -293,7 +335,7 @@ void ServoCalcs::calculateSingleIteration()
 
   // Always update the joints and end-effector transform for 2 reasons:
   // 1) in case the getCommandFrameTransform() method is being used
-  // 2) so the low-pass filters are up to date and don't cause a jump
+  // 2) so Reflexxes filtering is up to date and doesn't cause a jump
   updateJoints();
 
   // Calculate and publish worst stop time for collision checker
@@ -331,14 +373,11 @@ void ServoCalcs::calculateSingleIteration()
 
   have_nonzero_command_ = have_nonzero_twist_stamped_ || have_nonzero_joint_command_;
 
-  // Don't end this function without updating the filters
-  updated_filters_ = false;
-
-  // If paused or while waiting for initial servo commands, just keep the low-pass filters up to date with current
-  // joints so a jump doesn't occur when restarting
+  // If paused or while waiting for initial servo commands, just keep up to date with current joints so a jump doesn't
+  // occur when restarting
   if (wait_for_servo_commands_ || paused_)
   {
-    resetLowPassFilters(original_joint_state_);
+    resetReflexxesState(original_joint_state_);
 
     // Check if there are any new commands with valid timestamp
     wait_for_servo_commands_ =
@@ -359,7 +398,7 @@ void ServoCalcs::calculateSingleIteration()
   {
     if (!cartesianServoCalcs(twist_stamped_cmd_, *joint_trajectory))
     {
-      resetLowPassFilters(original_joint_state_);
+      resetReflexxesState(original_joint_state_);
       return;
     }
   }
@@ -367,7 +406,7 @@ void ServoCalcs::calculateSingleIteration()
   {
     if (!jointServoCalcs(joint_servo_cmd_, *joint_trajectory))
     {
-      resetLowPassFilters(original_joint_state_);
+      resetReflexxesState(original_joint_state_);
       return;
     }
   }
@@ -379,6 +418,7 @@ void ServoCalcs::calculateSingleIteration()
     {
       point.velocities.assign(point.velocities.size(), 0);
     }
+    resetReflexxesState(original_joint_state_);
   }
 
   // Print a warning to the user if both are stale
@@ -447,10 +487,6 @@ void ServoCalcs::calculateSingleIteration()
       multiarray_outgoing_cmd_pub_->publish(std::move(joints));
     }
   }
-
-  // Update the filters if we haven't yet
-  if (!updated_filters_)
-    resetLowPassFilters(original_joint_state_);
 }
 
 rcl_interfaces::msg::SetParametersResult ServoCalcs::robotLinkCommandFrameCallback(const rclcpp::Parameter& parameter)
@@ -553,7 +589,10 @@ bool ServoCalcs::internalServoUpdate(Eigen::ArrayXd& delta_theta,
   internal_joint_state_ = original_joint_state_;
 
   // Enforce SRDF Velocity, Acceleration limits
-  enforceVelLimits(delta_theta);
+  if (!enforceVelAccelLimitsWithReflexxes(delta_theta))
+  {
+    return false;
+  }
 
   // Apply collision scaling
   double collision_scale = collision_velocity_scale_;
@@ -571,12 +610,9 @@ bool ServoCalcs::internalServoUpdate(Eigen::ArrayXd& delta_theta,
   }
   delta_theta *= collision_scale;
 
-  // Loop thru joints and update them, calculate velocities, and filter
+  // Loop thru joints and update them, calculate velocities, and smooth
   if (!applyJointUpdate(delta_theta, internal_joint_state_, prev_joint_velocity_))
     return false;
-
-  // Mark the lowpass filters as updated for this cycle
-  updated_filters_ = true;
 
   // compose outgoing message
   composeJointTrajMessage(internal_joint_state_, joint_trajectory);
@@ -617,9 +653,6 @@ bool ServoCalcs::applyJointUpdate(const Eigen::ArrayXd& delta_theta, sensor_msgs
     // Increment joint
     joint_state.position[i] += delta_theta[i];
 
-    // Lowpass filter position
-    joint_state.position[i] = position_filters_[i].filter(joint_state.position[i]);
-
     // Calculate joint velocity
     joint_state.velocity[i] = delta_theta[i] / parameters_->publish_period;
 
@@ -647,14 +680,20 @@ void ServoCalcs::insertRedundantPointsIntoTrajectory(trajectory_msgs::msg::Joint
   }
 }
 
-void ServoCalcs::resetLowPassFilters(const sensor_msgs::msg::JointState& joint_state)
+void ServoCalcs::resetReflexxesState(const sensor_msgs::msg::JointState& joint_state)
 {
-  for (std::size_t i = 0; i < position_filters_.size(); ++i)
-  {
-    position_filters_[i].reset(joint_state.position[i]);
-  }
+  std::vector<double> current_positions(num_joints_);
+  std::vector<double> zero_velocities(num_joints_, 0.);
+  std::vector<double> zero_accelerations(num_joints_, 0.);
 
-  updated_filters_ = true;
+  for (std::size_t i = 0; i < num_joints_; ++i)
+  {
+    current_positions[i] = joint_state.position[i];
+  }
+  reflexxes_wrapper::setCurrentState(reflexxes_velocity_input_param_.get(), num_joints_, current_positions,
+                                     zero_velocities, zero_accelerations);
+  reflexxes_wrapper::resetOutputStruct(reflexxes_velocity_output_param_.get(), num_joints_, current_positions,
+                                       zero_velocities, zero_accelerations);
 }
 
 void ServoCalcs::composeJointTrajMessage(const sensor_msgs::msg::JointState& joint_state,
@@ -753,28 +792,51 @@ double ServoCalcs::velocityScalingFactorForSingularity(const Eigen::VectorXd& co
   return velocity_scale;
 }
 
-void ServoCalcs::enforceVelLimits(Eigen::ArrayXd& delta_theta)
+bool ServoCalcs::enforceVelAccelLimitsWithReflexxes(Eigen::ArrayXd& delta_theta)
 {
-  // Convert to joint angle velocities for checking and applying joint specific velocity limits.
-  Eigen::ArrayXd velocity = delta_theta / parameters_->publish_period;
-
-  std::size_t joint_delta_index{ 0 };
-  double velocity_scaling_factor{ 1.0 };
-  for (const moveit::core::JointModel* joint : joint_model_group_->getActiveJointModels())
+  // Update current state in Reflexxes
+  // For current state, we know the current position well. For vel and accel, use the previous output from Reflexxes
+  // This assumes the hardware tracks the requested vel/accel well.
+  for (size_t joint_idx = 0; joint_idx < num_joints_; ++joint_idx)
   {
-    const auto& bounds = joint->getVariableBounds(joint->getName());
-    if (bounds.velocity_bounded_ && velocity(joint_delta_index) != 0.0)
-    {
-      const double unbounded_velocity = velocity(joint_delta_index);
-      // Clamp each joint velocity to a joint specific [min_velocity, max_velocity] range.
-      const auto bounded_velocity = std::min(std::max(unbounded_velocity, bounds.min_velocity_), bounds.max_velocity_);
-      velocity_scaling_factor = std::min(velocity_scaling_factor, bounded_velocity / unbounded_velocity);
-    }
-    ++joint_delta_index;
+    reflexxes_velocity_input_param_->CurrentVelocityVector->VecData[joint_idx] =
+        reflexxes_velocity_output_param_->NewVelocityVector->VecData[joint_idx];
+    reflexxes_velocity_input_param_->CurrentAccelerationVector->VecData[joint_idx] =
+        reflexxes_velocity_output_param_->NewAccelerationVector->VecData[joint_idx];
+  }
+  reflexxes_wrapper::setCurrentPositions(reflexxes_velocity_input_param_.get(), num_joints_,
+                                         original_joint_state_.position);
+
+  // Update target state in Reflexxes
+  std::vector<double> target_positions = original_joint_state_.position;
+  for (size_t joint_idx = 0; joint_idx < num_joints_; ++joint_idx)
+  {
+    target_positions[joint_idx] += delta_theta[joint_idx];
+  }
+  Eigen::ArrayXd eigen_target_velocities = delta_theta / parameters_->publish_period;
+  std::vector<double> target_velocities(eigen_target_velocities.data(),
+                                        eigen_target_velocities.data() + eigen_target_velocities.size());
+  reflexxes_wrapper::setTargetState(reflexxes_velocity_input_param_.get(), num_joints_, target_positions,
+                                    target_velocities);
+
+  // Call the Reflexxes algorithm
+  int result = reflexxes_->RMLVelocity(*reflexxes_velocity_input_param_, reflexxes_velocity_output_param_.get(),
+                                       reflexxes_flags_);
+
+  // Calculate the new delta_theta from Reflexxes output
+  for (size_t joint_idx = 0; joint_idx < num_joints_; ++joint_idx)
+  {
+    delta_theta[joint_idx] = reflexxes_velocity_output_param_->NewPositionVector->VecData[joint_idx] -
+                             reflexxes_velocity_input_param_->CurrentPositionVector->VecData[joint_idx];
   }
 
-  // Convert back to joint angle increments.
-  delta_theta = velocity_scaling_factor * velocity * parameters_->publish_period;
+  if (result < 0)
+  {
+    RCLCPP_ERROR_STREAM(LOGGER, "Reflexxes trajectory smoothing failed. Halting. Reflexxes error: " << result);
+    return false;
+  }
+
+  return true;
 }
 
 bool ServoCalcs::enforcePositionLimits(trajectory_msgs::msg::JointTrajectory& joint_trajectory) const
