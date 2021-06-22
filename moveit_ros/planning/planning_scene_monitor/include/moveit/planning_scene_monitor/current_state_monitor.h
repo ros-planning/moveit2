@@ -42,8 +42,8 @@
 #include <boost/function.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
-#include <boost/signals2.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tf2_msgs/msg/tf_message.hpp>
 
 namespace planning_scene_monitor
 {
@@ -53,8 +53,6 @@ using JointStateUpdateCallback = boost::function<void(const sensor_msgs::msg::Jo
     @brief Monitors the joint_states topic and tf to maintain the current state of the robot. */
 class CurrentStateMonitor
 {
-  using TFConnection = boost::signals2::connection;
-
 public:
   /** @brief Constructor.
    *  @param node A shared_ptr to a node used for subscription to joint_states_topic
@@ -182,7 +180,8 @@ public:
 
 private:
   void jointStateCallback(const sensor_msgs::msg::JointState::ConstSharedPtr joint_state);
-  void tfCallback();
+  void updateMultiDofJoints();
+  void transfromCallback(const tf2_msgs::msg::TFMessage::ConstSharedPtr msg, bool is_static);
 
   std::shared_ptr<rclcpp::Node> node_;
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
@@ -194,13 +193,13 @@ private:
   rclcpp::Time monitor_start_time_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
   double error_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;
+  rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr transform_subscriber_;
+  rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr static_transfrom_subscriber_;
   rclcpp::Time current_state_time_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
 
   mutable std::mutex state_update_lock_;
   mutable std::condition_variable state_update_condition_;
   std::vector<JointStateUpdateCallback> update_callbacks_;
-
-  std::shared_ptr<TFConnection> tf_connection_;
 };
 
 MOVEIT_CLASS_FORWARD(CurrentStateMonitor)  // Defines CurrentStateMonitorPtr, ConstPtr, WeakPtr... etc
