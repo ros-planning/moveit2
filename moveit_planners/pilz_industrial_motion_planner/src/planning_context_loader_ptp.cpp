@@ -36,7 +36,13 @@
 #include "moveit/planning_scene/planning_scene.h"
 #include "pilz_industrial_motion_planner/planning_context_ptp.h"
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
+
+namespace
+{
+static const rclcpp::Logger LOGGER =
+    rclcpp::get_logger("moveit.pilz_industrial_motion_planner.planning_context_loader_ptp");
+}
 
 pilz_industrial_motion_planner::PlanningContextLoaderPTP::PlanningContextLoaderPTP()
 {
@@ -59,12 +65,12 @@ bool pilz_industrial_motion_planner::PlanningContextLoaderPTP::loadContext(
   {
     if (!limits_set_)
     {
-      ROS_ERROR_STREAM("Joint Limits are not defined. Cannot load planning "
-                       "context. Call setLimits loadContext");
+      RCLCPP_ERROR_STREAM(LOGGER,
+                          "Joint Limits are not defined. Cannot load planning context. Call setLimits loadContext");
     }
     if (!model_set_)
     {
-      ROS_ERROR_STREAM("Robot model was not set");
+      RCLCPP_ERROR_STREAM(LOGGER, "Robot model was not set");
     }
     return false;
   }

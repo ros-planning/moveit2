@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="3">
   <name>pilz_industrial_motion_planner_testutils</name>
   <version>1.1.1</version>
   <description>Helper scripts and functionality to test industrial motion generation</description>
@@ -16,14 +16,20 @@
   <url type="bugtracker">https://github.com/ros-planning/moveit2/issues</url>
   <url type="repository">https://github.com/ros-planning/moveit2</url>
 
-  <build_depend>eigen_conversions</build_depend>
-  <build_depend>moveit_core</build_depend>
-  <build_depend>moveit_msgs</build_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>eigen3_cmake_module</buildtool_depend>
+  <buildtool_export_depend>eigen3_cmake_module</buildtool_export_depend>
+  <build_depend>moveit_common</build_depend>
 
-  <run_depend>moveit_core</run_depend>
-  <run_depend>moveit_msgs</run_depend>
-  <run_depend>moveit_commander</run_depend>
+  <depend>rclcpp</depend>
+  <depend>moveit_core</depend>
+  <depend>moveit_msgs</depend>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>tf2_eigen</build_depend>
+
+  <exec_depend>moveit_commander</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
 
 </package>

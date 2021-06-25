@@ -44,6 +44,8 @@
 
 namespace pilz_industrial_motion_planner
 {
+static const rclcpp::Logger LOGGER =
+    rclcpp::get_logger("moveit.pilz_industrial_motion_planner.move_group_sequence_service");
 MoveGroupSequenceService::MoveGroupSequenceService() : MoveGroupCapability("SequenceService")
 {
 }
@@ -55,51 +57,53 @@ MoveGroupSequenceService::~MoveGroupSequenceService()
 void MoveGroupSequenceService::initialize()
 {
   command_list_manager_.reset(new pilz_industrial_motion_planner::CommandListManager(
-      ros::NodeHandle("~"), context_->planning_scene_monitor_->getRobotModel()));
+      context_->node_, context_->planning_scene_monitor_->getRobotModel()));
 
-  sequence_service_ = root_node_handle_.advertiseService(SEQUENCE_SERVICE_NAME, &MoveGroupSequenceService::plan, this);
+  sequence_service_ = context_->node_->create_service<moveit_msgs::srv::GetMotionSequence>(
+      SEQUENCE_SERVICE_NAME,
+      std::bind(&MoveGroupSequenceService::plan, this, std::placeholders::_1, std::placeholders::_2));
 }
 
-bool MoveGroupSequenceService::plan(moveit_msgs::GetMotionSequence::Request& req,
-                                    moveit_msgs::GetMotionSequence::Response& res)
+bool MoveGroupSequenceService::plan(const moveit_msgs::srv::GetMotionSequence::Request::SharedPtr req,
+                                    moveit_msgs::srv::GetMotionSequence::Response::SharedPtr res)
 {
   // TODO: Do we lock on the correct scene? Does the lock belong to the scene
   // used for planning?
   planning_scene_monitor::LockedPlanningSceneRO ps(context_->planning_scene_monitor_);
 
-  ros::Time planning_start = ros::Time::now();
+  rclcpp::Time planning_start = context_->node_->now();
   RobotTrajCont traj_vec;
   try
   {
-    traj_vec = command_list_manager_->solve(ps, context_->planning_pipeline_, req.request);
+    traj_vec = command_list_manager_->solve(ps, context_->planning_pipeline_, req->request);
   }
   catch (const MoveItErrorCodeException& ex)
   {
-    ROS_ERROR_STREAM("Planner threw an exception (error code: " << ex.getErrorCode() << "): " << ex.what());
-    res.response.error_code.val = ex.getErrorCode();
+    RCLCPP_ERROR_STREAM(LOGGER, "Planner threw an exception (error code: " << ex.getErrorCode() << "): " << ex.what());
+    res->response.error_code.val = ex.getErrorCode();
     return true;
   }
   // LCOV_EXCL_START // Keep moveit up even if lower parts throw
   catch (const std::exception& ex)
   {
-    ROS_ERROR_STREAM("Planner threw an exception: " << ex.what());
+    RCLCPP_ERROR_STREAM(LOGGER, "Planner threw an exception: " << ex.what());
     // If 'FALSE' then no response will be sent to the caller.
     return false;
   }
   // LCOV_EXCL_STOP
 
-  res.response.planned_trajectories.resize(traj_vec.size());
+  res->response.planned_trajectories.resize(traj_vec.size());
   for (RobotTrajCont::size_type i = 0; i < traj_vec.size(); ++i)
   {
-    move_group::MoveGroupCapability::convertToMsg(traj_vec.at(i), res.response.sequence_start,
-                                                  res.response.planned_trajectories.at(i));
+    move_group::MoveGroupCapability::convertToMsg(traj_vec.at(i), res->response.sequence_start,
+                                                  res->response.planned_trajectories.at(i));
   }
-  res.response.error_code.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
-  res.response.planning_time = (ros::Time::now() - planning_start).toSec();
+  res->response.error_code.val = moveit_msgs::msg::MoveItErrorCodes::SUCCESS;
+  res->response.planning_time = (context_->node_->now() - planning_start).seconds();
   return true;
 }
 
 }  // namespace pilz_industrial_motion_planner
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(pilz_industrial_motion_planner::MoveGroupSequenceService, move_group::MoveGroupCapability)

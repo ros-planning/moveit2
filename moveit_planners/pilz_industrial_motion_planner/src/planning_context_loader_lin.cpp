@@ -37,7 +37,13 @@
 #include "pilz_industrial_motion_planner/planning_context_base.h"
 #include "pilz_industrial_motion_planner/planning_context_lin.h"
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
+
+namespace
+{
+static const rclcpp::Logger LOGGER =
+    rclcpp::get_logger("moveit.pilz_industrial_motion_planner.planning_context_loader_lin");
+}
 
 pilz_industrial_motion_planner::PlanningContextLoaderLIN::PlanningContextLoaderLIN()
 {
@@ -60,12 +66,11 @@ bool pilz_industrial_motion_planner::PlanningContextLoaderLIN::loadContext(
   {
     if (!limits_set_)
     {
-      ROS_ERROR_STREAM("Limits are not defined. Cannot load planning context. "
-                       "Call setLimits loadContext");
+      RCLCPP_ERROR_STREAM(LOGGER, "Limits are not defined. Cannot load planning context. Call setLimits loadContext");
     }
     if (!model_set_)
     {
-      ROS_ERROR_STREAM("Robot model was not set");
+      RCLCPP_ERROR_STREAM(LOGGER, "Robot model was not set");
     }
     return false;
   }
