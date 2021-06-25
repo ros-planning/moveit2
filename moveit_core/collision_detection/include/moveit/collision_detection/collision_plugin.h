@@ -37,6 +37,7 @@
 #include <moveit/macros/class_forward.h>
 #include <moveit/collision_detection/collision_env.h>
 #include <moveit/planning_scene/planning_scene.h>
+#include <moveit/collision_detection/visibility_control.hpp>
 
 namespace collision_detection
 {

@@ -41,6 +41,7 @@
 #include <moveit/macros/class_forward.h>
 #include <moveit/collision_detection_fcl/fcl_compat.h>
 #include <geometric_shapes/check_isometry.h>
+#include <moveit/collision_detection_fcl/visibility_control.hpp>
 
 #if (MOVEIT_FCL_VERSION >= FCL_VERSION_CHECK(0, 6, 0))
 #include <fcl/broadphase/broadphase_collision_manager.h>

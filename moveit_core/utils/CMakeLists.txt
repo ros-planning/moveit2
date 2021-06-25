@@ -1,6 +1,6 @@
 set(MOVEIT_LIB_NAME moveit_utils)
 
-add_library(${MOVEIT_LIB_NAME} SHARED
+add_library(${MOVEIT_LIB_NAME}
   src/lexical_casts.cpp
   src/message_checks.cpp
   src/rclcpp_utils.cpp
@@ -9,7 +9,6 @@ ament_target_dependencies(${MOVEIT_LIB_NAME} Boost moveit_msgs)
 set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")
 
 install(DIRECTORY include/ DESTINATION include)
-
 
 find_package(ament_index_cpp REQUIRED)
 set(MOVEIT_TEST_LIB_NAME moveit_test_utils)

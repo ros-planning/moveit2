@@ -12,6 +12,7 @@ add_library(${MOVEIT_LIB_NAME} SHARED
 )
 
 set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")
+set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 
 ament_target_dependencies(${MOVEIT_LIB_NAME}
   urdf
@@ -33,14 +34,19 @@ target_link_libraries(${MOVEIT_LIB_NAME}
 
 install(DIRECTORY include/ DESTINATION include)
 
+if(NOT MSVC)
+# reenable once https://github.com/ros2/geometry2/pull/427 is in distribution
+
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
 
   ament_add_gtest(test_constraints test/test_constraints.cpp
     APPEND_LIBRARY_DIRS "${append_library_dirs}"
   )
+
   target_link_libraries(test_constraints moveit_test_utils ${MOVEIT_LIB_NAME})
 
   ament_add_gtest(test_orientation_constraints test/test_orientation_constraints.cpp)
   target_link_libraries(test_orientation_constraints moveit_test_utils ${MOVEIT_LIB_NAME})
+endif()
 endif()

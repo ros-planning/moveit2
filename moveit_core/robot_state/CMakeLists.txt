@@ -12,6 +12,11 @@ add_library(${MOVEIT_LIB_NAME} SHARED
   src/cartesian_interpolator.cpp
 )
 set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
+set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+# which is appropriate when building the dll but not consuming it.
+target_compile_definitions(${MOVEIT_LIB_NAME}
+  PRIVATE "ROBOT_STATE_BUILDING_LIBRARY")
+
 ament_target_dependencies(${MOVEIT_LIB_NAME}
   urdf
   tf2_geometry_msgs
@@ -34,7 +39,7 @@ if(BUILD_TESTING)
   find_package(resource_retriever REQUIRED)
 
   if(WIN32)
-    # TODO add windows paths
+    add_compile_definitions(_USE_MATH_DEFINES /wd4251 /wd4068 /wd4275)
   else()
     set(append_library_dirs "${CMAKE_CURRENT_BINARY_DIR};${CMAKE_CURRENT_BINARY_DIR}/../utils")
   endif()

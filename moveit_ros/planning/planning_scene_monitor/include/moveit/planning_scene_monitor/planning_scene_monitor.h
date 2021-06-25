@@ -45,12 +45,15 @@
 #include <moveit/occupancy_map_monitor/occupancy_map_monitor.h>
 #include <moveit/planning_scene_monitor/current_state_monitor.h>
 #include <moveit/collision_plugin_loader/collision_plugin_loader.h>
+#include <moveit/planning_scene_monitor/visibility_control.hpp>
 #include <moveit_msgs/srv/get_planning_scene.hpp>
+#include <boost/thread.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 #include <memory>
 #include <thread>
+#include "visibility_control.hpp"
 
 namespace planning_scene_monitor
 {
@@ -59,7 +62,7 @@ MOVEIT_CLASS_FORWARD(PlanningSceneMonitor)  // Defines PlanningSceneMonitorPtr, 
 /**
  * @brief PlanningSceneMonitor
  * Subscribes to the topic \e planning_scene */
-class PlanningSceneMonitor : private boost::noncopyable
+class PLANNING_SCENE_MONITOR_PUBLIC PlanningSceneMonitor : private boost::noncopyable
 {
 public:
   enum SceneUpdateType
