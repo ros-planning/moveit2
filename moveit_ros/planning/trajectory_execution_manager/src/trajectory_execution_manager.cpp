@@ -166,15 +166,8 @@ void TrajectoryExecutionManager::initialize()
 
   // other configuration steps
   reloadControllerInformation();
-  // The default callback group for rclcpp::Node is MutuallyExclusive which means we cannot call
-  // receiveEvent while processing a different callback. To fix this we create a new callback group (the type is not
-  // important since we only use it to process one callback) and associate event_topic_subscriber_ with this callback group
-  auto callback_group = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-  auto options = rclcpp::SubscriptionOptions();
-  options.callback_group = callback_group;
   event_topic_subscriber_ = node_->create_subscription<std_msgs::msg::String>(
-      EXECUTION_EVENT_TOPIC, 100, std::bind(&TrajectoryExecutionManager::receiveEvent, this, std::placeholders::_1),
-      options);
+      EXECUTION_EVENT_TOPIC, 100, std::bind(&TrajectoryExecutionManager::receiveEvent, this, std::placeholders::_1));
 
   controller_mgr_node_->get_parameter("trajectory_execution.allowed_execution_duration_scaling",
                                       allowed_execution_duration_scaling_);
@@ -879,6 +872,7 @@ bool TrajectoryExecutionManager::distributeTrajectory(const moveit_msgs::msg::Ro
         for (std::size_t j = 0; j < jnames.size(); ++j)
           bijection[j] = index[jnames[j]];
 
+        parts[i].multi_dof_joint_trajectory.header.frame_id = trajectory.multi_dof_joint_trajectory.header.frame_id;
         parts[i].multi_dof_joint_trajectory.points.resize(trajectory.multi_dof_joint_trajectory.points.size());
         for (std::size_t j = 0; j < trajectory.multi_dof_joint_trajectory.points.size(); ++j)
         {
