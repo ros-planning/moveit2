@@ -60,12 +60,13 @@ bool ForwardTrajectory::initialize(const rclcpp::Node::SharedPtr& node,
 
 bool ForwardTrajectory::reset()
 {
+  path_invalidation_event_send_ = false;
   return true;
 };
 
 moveit_msgs::action::LocalPlanner::Feedback
 ForwardTrajectory::solve(const robot_trajectory::RobotTrajectory& local_trajectory,
-                         const std::vector<moveit_msgs::msg::Constraints>& local_constraints,
+                         const std::shared_ptr<const moveit_msgs::action::LocalPlanner::Goal> local_goal,
                          trajectory_msgs::msg::JointTrajectory& local_solution)
 {
   // Create controller command trajectory

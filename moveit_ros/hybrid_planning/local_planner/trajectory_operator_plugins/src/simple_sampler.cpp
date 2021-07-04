@@ -48,16 +48,20 @@ bool SimpleSampler::initialize(const rclcpp::Node::SharedPtr& node, const moveit
 {
   // Load parameter & initialize member variables
   if (node->has_parameter("pass_through"))
+  {
     node->get_parameter<bool>("pass_through", pass_through_);
+  }
   else
+  {
     pass_through_ = node->declare_parameter<bool>("pass_through", false);
-
+  }
   reference_trajectory_ = std::make_shared<robot_trajectory::RobotTrajectory>(robot_model, group_name);
   next_waypoint_index_ = 0;
   return true;
 }
 
-bool SimpleSampler::addTrajectorySegment(const robot_trajectory::RobotTrajectory& new_trajectory)
+moveit_msgs::action::LocalPlanner::Feedback
+SimpleSampler::addTrajectorySegment(const robot_trajectory::RobotTrajectory& new_trajectory)
 {
   // Reset trajectory operator to delete old reference trajectory
   reset();
@@ -67,7 +71,9 @@ bool SimpleSampler::addTrajectorySegment(const robot_trajectory::RobotTrajectory
 
   // Parametrize trajectory and calculate velocity and accelerations
   time_parametrization_.computeTimeStamps(*reference_trajectory_);
-  return true;
+
+  // Return empty feedback
+  return feedback_;
 }
 
 bool SimpleSampler::reset()
@@ -77,14 +83,18 @@ bool SimpleSampler::reset()
   reference_trajectory_->clear();
   return true;
 }
-robot_trajectory::RobotTrajectory SimpleSampler::getLocalTrajectory(const moveit::core::RobotState& current_state)
+moveit_msgs::action::LocalPlanner::Feedback
+SimpleSampler::getLocalTrajectory(const moveit::core::RobotState& current_state,
+                                  robot_trajectory::RobotTrajectory& local_trajectory)
 {
-  robot_trajectory::RobotTrajectory local_trajectory(reference_trajectory_->getRobotModel(),
-                                                     reference_trajectory_->getGroupName());
+  // Delete previous local trajectory
+  local_trajectory.clear();
+
+  // Determine current local trajectory based on configured behavior
   if (pass_through_)
   {
     // Use reference_trajectory as local trajectory
-    local_trajectory.swap(*reference_trajectory_);
+    local_trajectory.append(*reference_trajectory_, 0.0, 0, reference_trajectory_->getWayPointCount());
   }
   else
   {
@@ -98,11 +108,13 @@ robot_trajectory::RobotTrajectory SimpleSampler::getLocalTrajectory(const moveit
       next_waypoint_index_ += 1;
     }
 
-    // Construct local trajectory containing the next three global trajectory waypoints
+    // Construct local trajectory containing the next global trajectory waypoint
     local_trajectory.addSuffixWayPoint(reference_trajectory_->getWayPoint(next_waypoint_index_),
                                        reference_trajectory_->getWayPointDurationFromPrevious(next_waypoint_index_));
   }
-  return local_trajectory;
+
+  // Return empty feedback
+  return feedback_;
 }
 
 double SimpleSampler::getTrajectoryProgress(const moveit::core::RobotState& current_state)
