@@ -45,7 +45,7 @@ static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_ros.trajectory_e
 
 const std::string TrajectoryExecutionManager::EXECUTION_EVENT_TOPIC = "trajectory_execution_event";
 
-static const rclcpp::Duration DEFAULT_CONTROLLER_INFORMATION_VALIDITY_AGE(1.0);
+static const rclcpp::Duration DEFAULT_CONTROLLER_INFORMATION_VALIDITY_AGE = rclcpp::Duration::from_seconds(1.0);
 static const double DEFAULT_CONTROLLER_GOAL_DURATION_MARGIN = 0.5;  // allow 0.5s more than the expected execution time
                                                                     // before triggering a trajectory cancel (applied
                                                                     // after scaling)
@@ -1071,6 +1071,8 @@ bool TrajectoryExecutionManager::configure(TrajectoryExecutionContext& context,
     // empty trajectories don't need to configure anything
     return true;
   }
+
+  reloadControllerInformation();
   std::set<std::string> actuated_joints;
 
   auto is_actuated = [this](const std::string& joint_name) -> bool {
@@ -1765,11 +1767,11 @@ bool TrajectoryExecutionManager::ensureActiveControllers(const std::vector<std::
         for (const std::string& controller_to_activate : controllers_to_activate)
         {
           ControllerInformation& ci = known_controllers_[controller_to_activate];
-          ci.last_update_ = rclcpp::Time();
+          ci.last_update_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
         }
         // reset the state update cache
         for (const std::string& controller_to_activate : controllers_to_deactivate)
-          known_controllers_[controller_to_activate].last_update_ = rclcpp::Time();
+          known_controllers_[controller_to_activate].last_update_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
         return controller_manager_->switchControllers(controllers_to_activate, controllers_to_deactivate);
       }
       else
