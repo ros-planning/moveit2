@@ -51,8 +51,13 @@ rclcpp::Logger LOGGER = rclcpp::get_logger("kinematics_plugin_loader");
 
 rclcpp::Parameter declare_parameter(const rclcpp::Node::SharedPtr& node, const std::string& parameter_name)
 {
-  if (!node->has_parameter(parameter_name))
+  try
+  {
     node->declare_parameter(parameter_name);
+  }
+  catch (const rclcpp::exceptions::ParameterAlreadyDeclaredException&)
+  {
+  }
   rclcpp::Parameter parameter;
   if (!node->get_parameter(parameter_name, parameter))
     RCLCPP_DEBUG_STREAM(LOGGER, "Parameter `" << parameter_name << "` doesn't exists");
