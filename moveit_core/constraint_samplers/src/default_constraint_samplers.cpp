@@ -491,8 +491,7 @@ bool IKConstraintSampler::samplePose(Eigen::Vector3d& pos, Eigen::Quaterniond& q
     else
     {
       /* The parameterization type should be validated in configure, so this should never happen. */
-      RCLCPP_ERROR(LOGGER, "default_constraint_samplers",
-                           "The parameterization type for the orientation constraints is invalid.");
+      RCLCPP_ERROR(LOGGER, "The parameterization type for the orientation constraints is invalid.");
     }
     // diff is isometry by construction
     // getDesiredRotationMatrix() returns a valid rotation matrix by contract

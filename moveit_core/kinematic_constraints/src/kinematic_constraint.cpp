@@ -614,7 +614,7 @@ bool OrientationConstraint::configure(const moveit_msgs::msg::OrientationConstra
   if (parameterization_type_ != moveit_msgs::msg::OrientationConstraint::XYZ_EULER_ANGLES &&
       parameterization_type_ != moveit_msgs::msg::OrientationConstraint::ROTATION_VECTOR)
   {
-    RCLCPP_WARN(LOGGER, "kinematic_constraints",
+    RCLCPP_WARN(LOGGER,
                 "Unknown parameterization for orientation constraint tolerance, using default (XYZ_EULER_ANGLES).");
     parameterization_type_ = moveit_msgs::msg::OrientationConstraint::XYZ_EULER_ANGLES;
   }
@@ -719,8 +719,7 @@ ConstraintEvaluationResult OrientationConstraint::decide(const moveit::core::Rob
   else
   {
     /* The parameterization type should be validated in configure, so this should never happen. */
-    RCLCPP_ERROR(LOGGER, "kinematic_constraints",
-                 "The parameterization type for the orientation constraints is invalid.");    
+    RCLCPP_ERROR(LOGGER, "The parameterization type for the orientation constraints is invalid.");    
   }
 
   bool result = xyz_rotation(2) < absolute_z_axis_tolerance_ + std::numeric_limits<double>::epsilon() &&
