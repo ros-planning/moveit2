@@ -719,7 +719,7 @@ ConstraintEvaluationResult OrientationConstraint::decide(const moveit::core::Rob
   else
   {
     /* The parameterization type should be validated in configure, so this should never happen. */
-    RCLCPP_ERROR(LOGGER, "The parameterization type for the orientation constraints is invalid.");    
+    RCLCPP_ERROR(LOGGER, "The parameterization type for the orientation constraints is invalid.");
   }
 
   bool result = xyz_rotation(2) < absolute_z_axis_tolerance_ + std::numeric_limits<double>::epsilon() &&
