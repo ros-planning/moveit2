@@ -369,7 +369,7 @@ TEST_F(LoadPlanningModelsPr2, OrientationConstraintsSampler)
     ks.update();
     EXPECT_TRUE(iks.sample(ks, ks_const, 100));
     EXPECT_TRUE(oc.decide(ks).satisfied);
-  }  
+  }
 }
 
 TEST_F(LoadPlanningModelsPr2, IKConstraintsSamplerValid)
