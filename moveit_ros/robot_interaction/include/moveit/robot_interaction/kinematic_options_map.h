@@ -40,11 +40,13 @@
 #include <boost/thread.hpp>
 #include <boost/function.hpp>
 
+#include <moveit/robot_interaction/visibility_control.h>
+
 namespace robot_interaction
 {
 // Maintains a set of KinematicOptions with a key/value mapping and a default
 // value.
-class KinematicOptionsMap
+class ROBOT_INTERACTION_PUBLIC KinematicOptionsMap
 {
 public:
   /// Constructor - set all options to reasonable default values.

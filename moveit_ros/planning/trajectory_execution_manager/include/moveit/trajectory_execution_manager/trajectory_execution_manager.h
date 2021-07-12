@@ -48,6 +48,9 @@
 #include <pluginlib/class_loader.hpp>
 
 #include <memory>
+#include <deque>
+
+#include <moveit/trajectory_execution_manager/visibility_control.h>
 
 namespace trajectory_execution_manager
 {
@@ -56,7 +59,7 @@ MOVEIT_CLASS_FORWARD(TrajectoryExecutionManager);  // Defines TrajectoryExecutio
 // Two modes:
 // Managed controllers
 // Unmanaged controllers: given the trajectory,
-class TrajectoryExecutionManager
+class TRAJECTORY_EXECUTION_MANAGER_PUBLIC TrajectoryExecutionManager
 {
 public:
   static const std::string EXECUTION_EVENT_TOPIC;

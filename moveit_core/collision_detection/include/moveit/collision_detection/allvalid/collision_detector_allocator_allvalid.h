@@ -39,10 +39,12 @@
 #include <moveit/collision_detection/collision_detector_allocator.h>
 #include <moveit/collision_detection/allvalid/collision_env_allvalid.h>
 
+#include <moveit/collision_detection/visibility_control.h>
+
 namespace collision_detection
 {
 /** \brief An allocator for AllValid collision detectors */
-class CollisionDetectorAllocatorAllValid
+class COLLISION_DETECTION_PUBLIC CollisionDetectorAllocatorAllValid
   : public CollisionDetectorAllocatorTemplate<CollisionEnvAllValid, CollisionDetectorAllocatorAllValid>
 {
 public:
